@@ -62,7 +62,8 @@ Data
 
 *Output*
 * Console: Column info, processing logs
-* CSV file: LOG.csvwith trade details
+* Stats: Backtesting statistics dictionary
+* CSV file: LOG.csv with trade details
 
 <small>  
 
@@ -78,9 +79,62 @@ Data
 | 8 | volatility_breakout_reversed | short | 2025_04_07_09:37:14 | 87.5 | bid_open | 2025_04_07_09:42:14 | 86.6 | ask_close | 0.9000000000000057 | 300.0 |
 </small>
 
+* Plots: Price-volume signal chart + PnL chart<br>
+<img src="./HFTframework/test_plots/02015_price_volume_combined.png" width="1200" height="800" />
+<img src="./HFTframework/test_plots/300_300.png" width="1200" height="800" />
 
-* Plots: Price-volume signal chart + PnL chart
-* Stats: Backtesting statistics dictionary
+### Experiment
+By *evaluate_strategy_performance()* in *performance_analyse.py* we can control the variables to conduct various experiments.
+```python
+# 1. Run strategy and get trade log
+trade_df = log.get_trade_log_df()
+
+# 2. Evaluate performance
+evaluation = evaluate_strategy_performance(trade_df, "experiment_name")
+```
+All results will be added into performance.csv.
+<small>
+
+| note | total_pnl | total_return | num_trades | win_rate | profit_factor | max_drawdown | trade_volatility | sharpe_ratio |
+|------|-----------|--------------|------------|----------|---------------|--------------|------------------|--------------|
+| min_hold_ticks_120 | 3.1000000000000085 | 0.04029787575690253 | 109 | 0.46788990825688076 | 1.201954397394137 | 0.043272680860713786 | 0.005224133311026535 | 0.07076873045966953 |
+| min_hold_ticks_180 | 3.0500000000000256 | 0.037261906867053884 | 85 | 0.49411764705882355 | 1.2013201320132036 | 0.03828023128445701 | 0.007051364230761064 | 0.0621688740732092 |
+| max_hold_ticks_380 | 7.099999999999909 | 0.08816875251131848 | 65 | 0.6153846153846154 | 1.6604651162790587 | 0.03363235059567249 | 0.006503298506814387 | 0.2085775925719307 |
+| max_hold_ticks_400 | 6.099999999999909 | 0.07480561844210429 | 65 | 0.6000000000000000 | 1.5446428571428468 | 0.03363235059567249 | 0.006537084200939655 | 0.17605030514593026 |
+| no_depth_imbalance | 3.7499999999998437 | 0.05557836442077555 | 91 | 0.5164835164835165 | 1.1820388349514483 | 0.061319544268891746 | 0.008358014332653261 | 0.07307372697185556 |
+| no_relative_spread | 3.7999999999999687 | 0.048611512119586836 | 104 | 0.5769230769230769 | 1.1909547738693447 | 0.052044578630978444 | 0.006346731486768221 | 0.07364710272362085 |
+| no_signed_vol | 10.499999999999943 | 0.13821785472121934 | 86 | 0.5581395348837209 | 1.638297872340422 | 0.04171771855104134 | 0.007831331546971776 | 0.20522491578650476 |
+| no_price_change | -4.100000000000051 | -0.02530664727684087 | 293 | 0.49146757679180886 | 0.93160967472894 | 0.15658076143887278 | 0.008122132279080445 | -0.010634006791668269 |
+</small>
+
+**Ablation Study -- PnL contribution**
+<small>
+
+| Configuration | Total_PnL | PnL_Change | Key_Finding |
+|--------------|-----------|------------|-------------|
+| Full_Strategy | 8.95 | — | Baseline performance (best overall) |
+| Remove_σₜₒw Filter | -2.15 | -11.10 | **Highest contribution**: Essential for filtering noisy signals, turns strategy profitable |
+| Remove_ΔP₃ | -4.10 | -13.05 | **Second highest contribution**: Critical for mean-reversion timing |
+| Remove_Imb_depth | 3.75 | -5.20 | Important L2 feature, contributes significantly to performance |
+| Remove_Spread_rel | 3.80 | -5.15 | Important L2 feature, works synergistically with other features |
+| Remove_V_signed | 10.50 | +1.55 | **Risk control feature**: Increases returns but also increases max drawdown |
+</small>
+
+**Sensitivity Analysis -- Denoising: Minimum holding period**
+
+**Controlled Test -- Risk Management: Maximum holding period**
+
+<table>
+  <tr>
+    <td><img src="./HFTframework/combined_performance_min.png" width="600" height="600" /></td>
+    <td><img src="./HFTframework/combined_performance_max.png" width="600" height="600" /></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Min Hold Ticks Analysis</strong></td>
+    <td align="center"><strong>Max Hold Ticks Analysis</strong></td>
+  </tr>
+</table>
+
 
 ## single_stock_no_strategy.py<br>
 Core trading system module. Handles data processing, feature engineering, and backtesting without​ specific trading strategies.
@@ -141,14 +195,10 @@ Performance analysis and visualization module. Generates charts and metrics for 
 *Core Functions*
 * plot_price_chart()​ - Basic price chart
 * plot_price_volume_combined()​ - Price + volume + positions
-* plot_daily_trade_analysis()​ - Daily P&L and win rate
-* evaluate_strategy_performance()​ - Calculate key metrics (e.g., Returns, drawdown, Sharpe ratio)
+* evaluate_strategy_performance()​ - Calculate key metrics (e.g., Returns, drawdown, Sharpe ratio) and save results by save_to_performance_csv()
 * plot_combined_performance_MaxHolding()​ - Analyze max hold effects
 * plot_combined_performance_MinHolding()​ - Analyze min hold effects
-
-### Strategy charts: Price, volume, positions visualization
--> called in *main_single.py*
-### Daily analysis: P&L, win rate, long/short distribution
-### Parameter analysis: Min/max holding tick effects
-
+* plot_daily_trade_analysis()​ - Daily P&L and win rate
+<img src="./HFTframework/test_plots/D1.png" width="1200" height="800" />
+<img src="./HFTframework/test_plots/D2.png" width="1200" height="800" />
 
