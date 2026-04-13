@@ -1,5 +1,5 @@
 # High-frequency-trading-simple-framework
-A lightweight HFT backtesting framework for order-book strategies. Trades at counterparty prices, ignoring slippage. Provides data preprocessing, feature engineering, strategy templates, and risk controls (rebalance limits, holding periods, stop-loss). Outputs performance metrics. Supports rapid strategy prototyping.
+A lightweight high-frequency trading framework for statistical arbitrage implements a systematic workflow for order-book strategies. The framework enables rapid prototyping through data preprocessing, feature engineering, and strategy execution with realistic counterparty pricing. Core modules include L2 data processing, multiple signal generators, and comprehensive backtesting with risk controls. The system supports both single-stock mean reversion and pair trading strategies, featuring correlation screening, cointegration validation, and dynamic hedging. Performance evaluation includes ablation studies, parameter sensitivity analysis, and visualization of 15+ metrics. Applications encompass market microstructure research, feature importance testing, and strategy optimization using Hong Kong stock L2 data.
 
 ## main_batch.py<br>
 Batch backtest for Hong Kong stock trading strategies, testing multiple strategies on 60+ stocks.<br>
