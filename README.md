@@ -120,7 +120,7 @@ All results will be added into performance.csv.
 | Remove_V_signed | 10.50 | +1.55 | **Risk control feature**: Increases returns but also increases max drawdown |
 </small>
 
-**Sensitivity Analysis -- Denoising: Minimum holding period**
+**Sensitivity Test -- Denoising: Minimum holding period**
 
 **Controlled Test -- Risk Management: Maximum holding period**
 
